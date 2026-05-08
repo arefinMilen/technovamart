@@ -29,20 +29,26 @@ export default function Header() {
   const { user, isAuthenticated, logout } = useAuthStore();
   const router = useRouter();
 
-  // ✅ Ensure component only renders after hydration
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
   const totalItems = isMounted && hasHydrated ? cartTotalItems() : 0;
 
-  const accountRef = useRef<HTMLDivElement | null>(null);
+  // ✅ Separate refs for mobile and desktop dropdowns
+  const mobileAccountRef = useRef<HTMLDivElement | null>(null);
+  const desktopAccountRef = useRef<HTMLDivElement | null>(null);
 
-  // ✅ Close account dropdown when clicking outside
+  // ✅ Close account dropdown when clicking outside (handles both refs)
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (!accountRef.current) return;
-      if (!accountRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const clickedInsideMobile =
+        mobileAccountRef.current?.contains(target) ?? false;
+      const clickedInsideDesktop =
+        desktopAccountRef.current?.contains(target) ?? false;
+
+      if (!clickedInsideMobile && !clickedInsideDesktop) {
         setAccountOpen(false);
       }
     };
@@ -70,9 +76,16 @@ export default function Header() {
     { name: "Accessories", slug: "accessories" },
   ];
 
+  // ✅ Shared logout handler
+  const handleLogout = () => {
+    logout();
+    setAccountOpen(false);
+    router.push("/");
+  };
+
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
-      {/* Top bar - Hidden on mobile, visible on md and up */}
+      {/* Top bar */}
       <div className="hidden md:block bg-red-600 text-white text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <span className="flex items-center gap-1">
@@ -85,9 +98,11 @@ export default function Header() {
       {/* Main header */}
       <div className="px-4 py-2 md:py-3">
         <div className="max-w-7xl mx-auto">
-          {/* Mobile Layout - Stack on small screens */}
+
+          {/* ─── Mobile Layout ─── */}
           <div className="flex md:hidden items-center gap-2 mb-2">
-            {/* Logo - always visible */}
+
+            {/* Logo */}
             <Link href="/" className="flex items-center gap-1 shrink-0">
               <div className="bg-red-600 text-white font-bold rounded-lg p-1">
                 <Image
@@ -99,7 +114,7 @@ export default function Header() {
               </div>
             </Link>
 
-            {/* Search on mobile - compact */}
+            {/* Search */}
             <form onSubmit={handleSearch} className="flex-1">
               <div className="flex border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-red-500 focus-within:border-transparent">
                 <input
@@ -118,7 +133,7 @@ export default function Header() {
               </div>
             </form>
 
-            {/* Cart badge on mobile */}
+            {/* Cart */}
             <Link
               href="/cart"
               className="relative flex items-center text-gray-600 hover:text-red-600 transition shrink-0"
@@ -131,8 +146,8 @@ export default function Header() {
               )}
             </Link>
 
-            {/* Mobile Account/Login Button - Added to header row */}
-            <div className="relative shrink-0" ref={accountRef}>
+            {/* ✅ Mobile Account — uses its own ref, dropdown is fixed-positioned */}
+            <div className="relative shrink-0" ref={mobileAccountRef}>
               {isAuthenticated ? (
                 <button
                   className="text-gray-600 hover:text-red-600 transition p-1"
@@ -150,15 +165,23 @@ export default function Header() {
                 </Link>
               )}
 
+              {/* ✅ Key fix: use fixed positioning so it's never clipped by parent overflow */}
               {accountOpen && isAuthenticated && (
-                <div className="absolute right-0 top-full mt-1 bg-white shadow-lg rounded-lg w-44 py-2 border z-50">
+                <div
+                  className="fixed right-4 bg-white shadow-xl rounded-lg w-48 py-2 border border-gray-200"
+                  style={{
+                    top:
+                      (mobileAccountRef.current?.getBoundingClientRect().bottom ?? 0) + 8,
+                    zIndex: 9999,
+                  }}
+                >
                   <div className="px-3 py-2 text-xs text-gray-500 border-b truncate">
                     {user?.email}
                   </div>
 
                   <Link
                     href="/account/profile"
-                    className="flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50"
+                    className="flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-gray-50 active:bg-gray-100 transition-colors"
                     onClick={() => setAccountOpen(false)}
                   >
                     <User size={14} /> Profile
@@ -166,7 +189,7 @@ export default function Header() {
 
                   <Link
                     href="/account/orders"
-                    className="flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50"
+                    className="flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-gray-50 active:bg-gray-100 transition-colors"
                     onClick={() => setAccountOpen(false)}
                   >
                     <ShoppingCart size={14} /> Orders
@@ -175,7 +198,7 @@ export default function Header() {
                   {(user as any)?.is_staff && (
                     <Link
                       href="/admin-login"
-                      className="flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 text-red-600 font-medium"
+                      className="flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-gray-50 active:bg-gray-100 text-red-600 font-medium transition-colors"
                       onClick={() => setAccountOpen(false)}
                     >
                       <LayoutDashboard size={14} /> Admin
@@ -184,12 +207,8 @@ export default function Header() {
 
                   <div className="border-t mt-1">
                     <button
-                      onClick={() => {
-                        logout();
-                        setAccountOpen(false);
-                        router.push("/");
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs text-red-600 hover:bg-gray-50"
+                      onClick={handleLogout}
+                      className="w-full text-left px-3 py-2.5 text-sm text-red-600 hover:bg-gray-50 active:bg-gray-100 transition-colors"
                       type="button"
                     >
                       Logout
@@ -200,7 +219,7 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Desktop Layout - Horizontal on large screens */}
+          {/* ─── Desktop Layout ─── */}
           <div className="hidden md:flex items-center gap-4">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 shrink-0">
@@ -213,9 +232,7 @@ export default function Header() {
                 />
               </div>
               <div>
-                <div className="font-bold text-gray-900 leading-tight">
-                  TechNova
-                </div>
+                <div className="font-bold text-gray-900 leading-tight">TechNova</div>
                 <div className="text-xs text-gray-500 leading-tight">Mart</div>
               </div>
             </Link>
@@ -255,9 +272,10 @@ export default function Header() {
               </Link>
 
               {isAuthenticated ? (
+                // ✅ Desktop account — uses its own ref
                 <div
                   className="relative"
-                  ref={accountRef}
+                  ref={desktopAccountRef}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
@@ -277,7 +295,7 @@ export default function Header() {
 
                       <Link
                         href="/account/profile"
-                        className="flex items-center gap-2 px-4 py-2 text-xs md:text-sm hover:bg-gray-50"
+                        className="flex items-center gap-2 px-4 py-2 text-xs md:text-sm hover:bg-gray-50 transition-colors"
                         onClick={() => setAccountOpen(false)}
                       >
                         <User size={14} /> My Profile
@@ -285,7 +303,7 @@ export default function Header() {
 
                       <Link
                         href="/account/orders"
-                        className="flex items-center gap-2 px-4 py-2 text-xs md:text-sm hover:bg-gray-50"
+                        className="flex items-center gap-2 px-4 py-2 text-xs md:text-sm hover:bg-gray-50 transition-colors"
                         onClick={() => setAccountOpen(false)}
                       >
                         <ShoppingCart size={14} /> My Orders
@@ -294,7 +312,7 @@ export default function Header() {
                       {(user as any)?.is_staff && (
                         <Link
                           href="/admin-login"
-                          className="flex items-center gap-2 px-4 py-2 text-xs md:text-sm hover:bg-gray-50 text-red-600 font-medium"
+                          className="flex items-center gap-2 px-4 py-2 text-xs md:text-sm hover:bg-gray-50 text-red-600 font-medium transition-colors"
                           onClick={() => setAccountOpen(false)}
                         >
                           <LayoutDashboard size={14} /> Admin Panel
@@ -303,12 +321,8 @@ export default function Header() {
 
                       <div className="border-t mt-1">
                         <button
-                          onClick={() => {
-                            logout();
-                            setAccountOpen(false);
-                            router.push("/");
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs md:text-sm text-red-600 hover:bg-gray-50"
+                          onClick={handleLogout}
+                          className="w-full text-left px-4 py-2 text-xs md:text-sm text-red-600 hover:bg-gray-50 transition-colors"
                           type="button"
                         >
                           Logout
@@ -328,8 +342,6 @@ export default function Header() {
               )}
             </div>
           </div>
-
-          {/* Mobile Account/Login Button - REMOVED (now in header row above) */}
         </div>
       </div>
 
@@ -337,7 +349,6 @@ export default function Header() {
       <nav className="bg-gray-900 text-white">
         <div className="px-4">
           <div className="max-w-7xl mx-auto flex items-center">
-            {/* All Categories button */}
             <button
               className="flex items-center gap-2 py-2.5 md:py-3 shrink-0 hover:text-red-400 transition"
               onClick={() => setMenuOpen((v) => !v)}
@@ -352,24 +363,20 @@ export default function Header() {
             </button>
           </div>
 
-          {/* ✅ Beautiful dropdown under Categories - Fully Responsive */}
           {menuOpen && (
             <>
-              {/* overlay - only block clicks under the header */}
               <div
                 className="fixed top-0 left-0 right-0 bottom-0 bg-black/30 z-40"
                 onClick={() => setMenuOpen(false)}
                 style={{ pointerEvents: menuOpen ? "auto" : "none" }}
               />
 
-              {/* dropdown container */}
               <div
                 className="absolute left-0 top-full w-full z-50"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="px-4">
                   <div className="max-w-7xl mx-auto bg-white text-gray-900 rounded-2xl shadow-xl border border-gray-200 overflow-hidden mt-2 animate-in fade-in zoom-in-95 duration-150">
-                    {/* header */}
                     <div className="flex items-center justify-between px-3 md:px-4 py-2.5 md:py-3 border-b bg-gray-50">
                       <div>
                         <p className="font-semibold text-sm md:text-base leading-tight">
@@ -389,7 +396,6 @@ export default function Header() {
                       </button>
                     </div>
 
-                    {/* items */}
                     <div className="p-3 md:p-4">
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
                         {NAV_CATEGORIES.map((cat) => (
