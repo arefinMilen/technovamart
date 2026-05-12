@@ -31,9 +31,12 @@ class CategorySerializer(serializers.ModelSerializer):
     def get_icon(self, obj):
         if obj.icon:
             request = self.context.get('request')
+
             if request:
-                return request.build_absolute_uri(obj.icon.url)
-            return obj.icon.url
+                return request.build_absolute_uri(obj.icon)
+
+            return obj.icon
+
         return None
 
 
