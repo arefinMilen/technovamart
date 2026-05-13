@@ -16,6 +16,15 @@ type AddressForm = {
   address_line: string;
 };
 
+// Shipping rates configuration
+const SHIPPING_RATES = {
+  DHAKA: 80,
+  OTHER: 120,
+};
+
+// Cities considered as Dhaka (add more as needed)
+const DHAKA_CITIES = ["Dhaka", "dhaka", "Dhaka City", "Dacca"];
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, totalPrice, clearCart } = useCartStore();
@@ -67,7 +76,15 @@ export default function CheckoutPage() {
       toast.error(err.response?.data?.error || "Failed to place order");
     },
   });
-
+   // Calculate shipping cost based on selected address city
+  const getShippingCost = () => {
+    if (!selectedAddress) return SHIPPING_RATES.OTHER; // default
+    const selectedAddr = addresses.find((addr: any) => addr.id === selectedAddress);
+    if (!selectedAddr) return SHIPPING_RATES.OTHER;
+    
+    const city = selectedAddr.city || "";
+    return DHAKA_CITIES.includes(city) ? SHIPPING_RATES.DHAKA : SHIPPING_RATES.OTHER;
+  };
   if (!isAuthenticated) {
     return (
       <div className="max-w-md mx-auto px-4 py-20 text-center">
@@ -88,7 +105,7 @@ export default function CheckoutPage() {
   }
 
   const subtotal = totalPrice();
-  const shipping = 80;
+  const shipping = getShippingCost();  // ← Dynamic shipping
   const total = subtotal + shipping;
 
   const handlePlaceOrder = () => {
