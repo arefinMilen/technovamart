@@ -76,11 +76,11 @@ export default function CheckoutPage() {
       toast.error(err.response?.data?.error || "Failed to place order");
     },
   });
-   // Calculate shipping cost based on selected address city
+  // Calculate shipping cost based on selected address city
   const getShippingCost = () => {
-    if (!selectedAddress) return SHIPPING_RATES.OTHER; // default
+    if (!selectedAddress) return 0; // Initially 0 until address selected
     const selectedAddr = addresses.find((addr: any) => addr.id === selectedAddress);
-    if (!selectedAddr) return SHIPPING_RATES.OTHER;
+    if (!selectedAddr) return 0;
     
     const city = selectedAddr.city || "";
     return DHAKA_CITIES.includes(city) ? SHIPPING_RATES.DHAKA : SHIPPING_RATES.OTHER;
@@ -287,9 +287,18 @@ export default function CheckoutPage() {
                 <span className="text-gray-500">Subtotal</span>
                 <span>৳{subtotal.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Shipping</span>
-                <span>৳{shipping}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500 flex items-center gap-1">
+                  Shipping
+                  {!selectedAddress && (
+                    <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">
+                      Select address
+                    </span>
+                  )}
+                </span>
+                <span className={selectedAddress ? "font-medium" : "text-gray-400"}>
+                  ৳{shipping}
+                </span>
               </div>
               <div className="flex justify-between font-bold text-base border-t pt-2">
                 <span>Total</span>
