@@ -87,17 +87,17 @@ export default function ProductsPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-[10px] sm:text-2xl  font-bold">
             {filters.search ? `Results for "${filters.search}"` : 'All Products'}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">{total} products found</p>
+          <p className="text-[10px] sm:text-sm text-gray-500 mt-1">{total} products found</p>
         </div>
 
         <div className="flex items-center gap-3">
           <select
             value={filters.ordering}
             onChange={(e) => updateFilter('ordering', e.target.value)}
-            className="input w-auto text-sm"
+            className="input w-auto text-[10px] sm:text-sm"
           >
             <option value="-created_at">Latest</option>
             <option value="price">Price: Low to High</option>
@@ -107,10 +107,10 @@ export default function ProductsPage() {
 
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="btn-secondary flex items-center gap-2 py-2"
+            className="btn-secondary flex items-center text-[10px] sm:text-sm gap-1 sm:gap-2 py-1 sm:py-2"
             type="button"
           >
-            <SlidersHorizontal size={16} /> Filters
+            <SlidersHorizontal size={12} /> Filters
           </button>
         </div>
       </div>

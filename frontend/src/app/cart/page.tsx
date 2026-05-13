@@ -36,7 +36,7 @@ export default function CartPage() {
     );
   }
 
-  const shipping = 80;
+  const shipping = 0;
   const subtotal = totalPrice();
   const total = subtotal + shipping;
 
