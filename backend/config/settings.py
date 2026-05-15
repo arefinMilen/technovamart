@@ -162,6 +162,7 @@ NAGAD_BASE_URL = config(
 )
 
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3000")
+GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="")
 
 # Session/CSRF settings (needed for admin panel alongside JWT)
 SESSION_COOKIE_SAMESITE = "Lax"

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { useState } from 'react'
+import { GoogleLogin } from '@react-oauth/google'
 
 export default function LoginPage() {
   const { register, handleSubmit, formState: { errors } } = useForm()
@@ -62,6 +63,40 @@ export default function LoginPage() {
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
+
+          <div className="mt-6">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
+              <div className="relative flex justify-center text-sm"><span className="px-2 bg-white text-gray-500">Or continue with</span></div>
+            </div>
+
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={async (credentialResponse) => {
+                  if (credentialResponse.credential) {
+                    setLoading(true)
+                    try {
+                      const res = await authApi.googleLogin(credentialResponse.credential)
+                      setUser(res.data.user, res.data.access, res.data.refresh)
+                      toast.success('Welcome back!')
+                      router.push('/')
+                    } catch (err: any) {
+                      toast.error('Google login failed.')
+                    } finally {
+                      setLoading(false)
+                    }
+                  }
+                }}
+                onError={() => {
+                  toast.error('Google Login Failed')
+                }}
+                useOneTap
+                theme="outline"
+                shape="rectangular"
+                width="100%"
+              />
+            </div>
+          </div>
 
           <p className="text-center text-sm text-gray-500 mt-6">
             Don't have an account?{' '}

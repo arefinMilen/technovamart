@@ -8,6 +8,9 @@ from django.contrib.auth import get_user_model, login, authenticate
 from django.http import HttpResponseRedirect
 from django.views import View
 from django.contrib.admin.sites import AdminSite
+from django.conf import settings
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 from .serializers import (
     RegisterSerializer, UserSerializer,
@@ -118,3 +121,54 @@ class AdminLoginBridgeView(APIView):
 
         login(request, user)
         return Response({'redirect': '/admin/'}, status=status.HTTP_200_OK)
+
+
+class GoogleLoginView(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        token = request.data.get('credential')
+        if not token:
+            return Response({'error': 'Token is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Specify the CLIENT_ID of the app that accesses the backend:
+            idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), settings.GOOGLE_CLIENT_ID)
+
+            # ID token is valid. Get the user's Google Account ID from the decoded token.
+            email = idinfo['email']
+            first_name = idinfo.get('given_name', '')
+            last_name = idinfo.get('family_name', '')
+            picture = idinfo.get('picture', '')
+
+            # Get or create user
+            user, created = User.objects.get_or_create(
+                email=email,
+                defaults={
+                    'username': email, # Use email as username to ensure uniqueness
+                    'first_name': first_name,
+                    'last_name': last_name,
+                }
+            )
+
+            # If user exists but was created via password, we might want to update their name if blank
+            if not created:
+                if not user.first_name:
+                    user.first_name = first_name
+                if not user.last_name:
+                    user.last_name = last_name
+                user.save()
+
+            # Generate tokens
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'user': UserSerializer(user).data,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+            }, status=status.HTTP_200_OK)
+
+        except ValueError:
+            # Invalid token
+            return Response({'error': 'Invalid Google token.'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
