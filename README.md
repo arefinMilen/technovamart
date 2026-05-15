@@ -1,6 +1,6 @@
 # 🛒 TechNova Mart
 
-> বাংলাদেশের সেরা গ্যাজেট ও ইলেকট্রনিক্স eCommerce প্ল্যাটফর্ম
+> Bangladesh’s best gadget and electronics eCommerce platform
 
 **Stack:** Next.js 14 + Django REST Framework + PostgreSQL + Docker
 
@@ -115,43 +115,43 @@ npm run dev
 ### Authentication
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/auth/register` | নতুন ব্যবহারকারী রেজিস্ট্রেশন |
-| POST | `/api/auth/login` | JWT লগইন |
-| POST | `/api/auth/logout` | লগআউট (token blacklist) |
-| POST | `/api/auth/refresh` | Access token রিফ্রেশ |
-| GET/PATCH | `/api/auth/profile` | প্রোফাইল দেখুন/আপডেট |
+| POST | `/api/auth/register` | Register a new user|
+| POST | `/api/auth/login` | JWT Login |
+| POST | `/api/auth/logout` | Logout (token blacklist) |
+| POST | `/api/auth/refresh` | Access token Refresh |
+| GET/PATCH | `/api/auth/profile` | View or update profile |
 
 ### Catalog
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/categories` | সব ক্যাটাগরি |
-| GET | `/api/brands` | সব ব্র্যান্ড |
-| GET | `/api/products?search=&category=&brand=&min_price=&max_price=` | পণ্য তালিকা + ফিল্টার |
-| GET | `/api/products/{slug}` | পণ্যের বিস্তারিত |
-| GET | `/api/banners?position=hero` | ব্যানার |
+| GET | `/api/categories` | All categories|
+| GET | `/api/brands` | All brands |
+| GET | `/api/products?search=&category=&brand=&min_price=&max_price=` | Product list + filters |
+| GET | `/api/products/{slug}` | Product details |
+| GET | `/api/banners?position=hero` | Banners |
 
 ### Orders
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/orders/preview` | অর্ডার প্রিভিউ |
-| POST | `/api/orders/create` | নতুন অর্ডার |
-| GET | `/api/orders/me` | আমার অর্ডারসমূহ |
-| GET | `/api/orders/{id}` | অর্ডার বিস্তারিত |
+| POST | `/api/orders/preview` |Order preview |
+| POST | `/api/orders/create` |Create a new order |
+| GET | `/api/orders/me` |My orders |
+| GET | `/api/orders/{id}` | Order details |
 
 ### Payments
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/payments/init` | পেমেন্ট শুরু (bKash/Nagad/Card/COD) |
-| GET | `/api/payments/callback/bkash` | bKash কলব্যাক |
+| POST | `/api/payments/init` | Start payment: bKash, Nagad, Card, or COD |
+| GET | `/api/payments/callback/bkash` | bKash callback |
 
 ---
 
 ## 💳 Payment Integration
 
 ### bKash (Sandbox)
-1. [bKash Developer Portal](https://developer.bka.sh/) এ অ্যাকাউন্ট তৈরি করুন
-2. Sandbox credentials নিন
-3. `.env` এ বসান:
+1. [bKash Developer Portal](https://developer.bka.sh/) Create an account on
+2.Collect sandbox credentials
+3. `.env` Add them to:
 ```env
 BKASH_APP_KEY=your_key
 BKASH_APP_SECRET=your_secret
@@ -160,8 +160,8 @@ BKASH_PASSWORD=your_password
 ```
 
 ### Nagad
-1. [Nagad Developer](https://nagad.com.bd/developer/) এ যোগাযোগ করুন
-2. Merchant credentials নিন
+1. Contact [Nagad Developer](https://nagad.com.bd/developer/)
+2. Collect merchant credentials
 
 ---
 
@@ -175,10 +175,11 @@ npx vercel --prod
 ```
 
 ### Backend → Render/Railway
-1. GitHub এ push করুন
-2. Render.com এ নতুন Web Service তৈরি করুন
-3. Environment variables সেট করুন
-4. PostgreSQL database যোগ করুন
+
+1. Push the project to GitHub
+2. Create a new Web Service on Render.com
+3. Set environment variables
+4. Add a PostgreSQL database
 
 ### Backend → AWS EC2
 ```bash
